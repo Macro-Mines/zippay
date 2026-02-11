@@ -24,7 +24,7 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
 
   if (showFullHistory) {
     return (
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 h-[700px]">
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-12 shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 h-[700px]">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
         <div className="mt-8 flex items-center gap-4 mb-8">
            <button onClick={() => setShowFullHistory(false)} className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors">
@@ -64,7 +64,7 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
   const isLoadReady = connectivity.isWifiOn && connectivity.isBluetoothOn;
 
   return (
-    <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 shadow-2xl relative overflow-hidden flex flex-col h-[700px]">
+    <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-12 shadow-2xl relative overflow-hidden flex flex-col h-[700px]">
       {/* Phone Notch & Status Bar */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
       <div className="absolute top-0 left-0 right-0 h-12 px-8 flex justify-between items-center text-[10px] font-bold text-slate-400 z-10">

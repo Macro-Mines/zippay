@@ -1,16 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
-import { GlobalState } from '../types';
+import { GlobalState, NotificationType } from '../types';
 
 interface Props {
   userWallet: GlobalState['userWallet'];
   pendingRequest: GlobalState['pendingPaymentRequest'];
   isMobileConnected: boolean;
+  watchAlert: { message: string; type: NotificationType } | null;
   onToggleActive: () => void;
   onProcessPayment: (approve: boolean) => void;
 }
 
-const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConnected, onToggleActive, onProcessPayment }) => {
+const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConnected, watchAlert, onToggleActive, onProcessPayment }) => {
   const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
   const [showHistory, setShowHistory] = useState(false);
 
@@ -48,7 +49,19 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
             </div>
           </div>
 
-          {pendingRequest ? (
+          {watchAlert ? (
+            <div className="animate-in zoom-in duration-300 flex flex-col items-center justify-center gap-3 w-full h-full bg-slate-950/40 absolute inset-0 z-[30] rounded-full">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${watchAlert.type === 'error' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'}`}>
+                <i className={`fas ${watchAlert.type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} text-xl`}></i>
+              </div>
+              <p className={`text-[11px] font-black uppercase tracking-widest px-8 leading-tight ${watchAlert.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                {watchAlert.message}
+              </p>
+              <div className="w-12 h-0.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                <div className="h-full bg-indigo-500 animate-progress-watch"></div>
+              </div>
+            </div>
+          ) : pendingRequest ? (
             <div className="animate-in zoom-in duration-300 flex flex-col items-center gap-2 w-full mt-14">
               <p className="text-[9px] text-slate-400 uppercase tracking-tighter">Request From</p>
               <h4 className="text-xs font-semibold truncate max-w-full mb-1">{pendingRequest.from}</h4>
@@ -99,7 +112,9 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
               >
                 <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] mb-1">Flash Wallet</p>
                 <h3 className="text-3xl font-bold mb-1">₹{userWallet.balance.toFixed(0)}</h3>
-                <p className="text-[10px] text-slate-400 mb-4">{userWallet.isActive ? 'READY' : 'INACTIVE'}</p>
+                <p className={`text-[10px] font-bold mb-4 ${userWallet.isActive ? 'text-indigo-400' : 'text-red-500'}`}>
+                  {userWallet.isActive ? 'READY' : 'INACTIVE'}
+                </p>
               </div>
               
               {/* Central Blinking Dot Button */}
@@ -132,6 +147,16 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
 
       {/* Watch Strap Bottom */}
       <div className="w-24 h-48 bg-slate-800 rounded-b-3xl border-x border-b border-slate-700 mt-[-60px] shadow-lg"></div>
+
+      <style>{`
+        @keyframes progress-watch {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+        .animate-progress-watch {
+          animation: progress-watch 3.5s linear forwards;
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { AppMode, GlobalState, Transaction } from './types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AppMode, GlobalState, Transaction, NotificationType } from './types';
 import SmartphoneUPI from './components/SmartphoneUPI';
 import Smartwatch from './components/Smartwatch';
 import MerchantApp from './components/MerchantApp';
@@ -31,6 +31,7 @@ const initialState: GlobalState = {
 
 const App: React.FC = () => {
   const [activeMode, setActiveMode] = useState<AppMode>(AppMode.UPI);
+  const [watchAlert, setWatchAlert] = useState<{ message: string; type: NotificationType } | null>(null);
   const [state, setState] = useState<GlobalState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : initialState;
@@ -40,11 +41,18 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
+  const triggerWatchAlert = useCallback((message: string, type: NotificationType = 'error') => {
+    setWatchAlert({ message, type });
+    setTimeout(() => setWatchAlert(null), 3500);
+  }, []);
+
   const toggleUserActive = () => {
+    const newState = !state.userWallet.isActive;
     setState(prev => ({
       ...prev,
-      userWallet: { ...prev.userWallet, isActive: !prev.userWallet.isActive }
+      userWallet: { ...prev.userWallet, isActive: newState }
     }));
+    triggerWatchAlert(newState ? 'WATCH ACTIVE' : 'WATCH INACTIVE', newState ? 'success' : 'error');
   };
 
   const toggleMerchantActive = () => {
@@ -65,11 +73,17 @@ const App: React.FC = () => {
   };
 
   const loadWatchWallet = (amount: number) => {
-    if (!state.connectivity.isWifiOn) return alert("Please turn on Wi-Fi to connect to bank server");
-    if (!state.connectivity.isBluetoothOn) return alert("Please connect Watch via Bluetooth to transfer funds");
-    if (amount <= 0 || amount > 500) return alert("Amount must be between 1 and 500");
-    if (state.userWallet.balance + amount > 500) return alert("Watch wallet limit is ₹500");
-    if (state.userWallet.phoneBalance < amount) return alert("Insufficient bank balance");
+    if (!state.userWallet.isActive) {
+      return triggerWatchAlert("WATCH INACTIVE", 'error');
+    }
+
+    if (!state.connectivity.isWifiOn || !state.connectivity.isBluetoothOn) {
+      return triggerWatchAlert("SYNC ERROR", 'error');
+    }
+    
+    if (amount <= 0 || amount > 500) return;
+    if (state.userWallet.balance + amount > 500) return triggerWatchAlert("LIMIT REACHED", 'error');
+    if (state.userWallet.phoneBalance < amount) return triggerWatchAlert("LOW BANK BAL", 'error');
 
     const txId = `TXN-LOAD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     const tx: Transaction = {
@@ -89,11 +103,15 @@ const App: React.FC = () => {
         transactions: [tx, ...prev.userWallet.transactions],
       }
     }));
+    triggerWatchAlert(`+₹${amount} LOADED`, 'success');
   };
 
   const requestPayment = (amount: number) => {
-    if (!state.merchantWallet.isActive) return alert("Merchant terminal is inactive");
-    if (amount > 200) return alert("Single transaction limit is ₹200");
+    if (!state.merchantWallet.isActive) return;
+    if (!state.userWallet.isActive) {
+      return triggerWatchAlert("WATCH INACTIVE", 'error');
+    }
+    if (amount > 200) return;
     
     setState(prev => ({
       ...prev,
@@ -109,23 +127,23 @@ const App: React.FC = () => {
   const processPayment = (approve: boolean) => {
     if (!approve) {
       setState(prev => ({ ...prev, pendingPaymentRequest: null }));
+      triggerWatchAlert("PAYMENT CANCEL", 'error');
       return;
     }
 
     const request = state.pendingPaymentRequest;
     if (!request) return;
 
-    // BUSINESS RULES VALIDATION
     if (!state.userWallet.isActive) {
-      return alert("Watch is deactivated. Tap the center dot to activate.");
+      return triggerWatchAlert("WATCH INACTIVE", 'error');
     }
     
     if (state.userWallet.balance < request.amount) {
-      return alert(`Insufficient Funds!\n\nYour balance: ₹${state.userWallet.balance.toFixed(2)}\nRequired: ₹${request.amount.toFixed(2)}`);
+      return triggerWatchAlert("LOW BALANCE", 'error');
     }
     
     if (state.userWallet.offlineCount >= 5) {
-      return alert("Offline Limit Reached!\n\nYou have completed 5 offline transactions. Please sync with your FLASHPay UPI app to continue.");
+      return triggerWatchAlert("SYNC REQUIRED", 'error');
     }
 
     const txId = `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -159,11 +177,13 @@ const App: React.FC = () => {
       pendingPaymentRequest: null
     }));
     
-    alert("Payment Successful!");
+    triggerWatchAlert("PAID SUCCESS", 'success');
   };
 
   const syncWatch = () => {
-    if (!state.connectivity.isBluetoothOn) return alert("Connect Watch via Bluetooth to sync data");
+    if (!state.connectivity.isBluetoothOn) {
+      return triggerWatchAlert("SYNC FAILED", 'error');
+    }
     
     setState(prev => ({
       ...prev,
@@ -174,12 +194,12 @@ const App: React.FC = () => {
         offlineCount: 0,
       }
     }));
-    alert("Synced with Phone successfully. Offline counter reset.");
+    triggerWatchAlert("SYNC COMPLETE", 'success');
   };
 
   const withdrawMerchant = () => {
     const amount = state.merchantWallet.balance;
-    if (amount <= 0) return alert("No funds to withdraw");
+    if (amount <= 0) return;
     
     setState(prev => ({
       ...prev,
@@ -189,7 +209,6 @@ const App: React.FC = () => {
         bankBalance: prev.merchantWallet.bankBalance + amount,
       }
     }));
-    alert(`₹${amount} withdrawn to bank account.`);
   };
 
   return (
@@ -231,6 +250,7 @@ const App: React.FC = () => {
             userWallet={state.userWallet} 
             pendingRequest={state.pendingPaymentRequest}
             isMobileConnected={state.connectivity.isBluetoothOn}
+            watchAlert={watchAlert}
             onToggleActive={toggleUserActive}
             onProcessPayment={processPayment}
           />

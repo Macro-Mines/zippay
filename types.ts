@@ -13,6 +13,15 @@ export interface Transaction {
   peer: string; // Merchant name or Phone number
 }
 
+export type NotificationType = 'success' | 'error' | 'info';
+
+export interface Notification {
+  id: string;
+  message: string;
+  type: NotificationType;
+  duration: number;
+}
+
 export interface GlobalState {
   userWallet: {
     balance: number;
