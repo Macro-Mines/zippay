@@ -35,7 +35,7 @@ const SmartphoneUPI: React.FC<Props> = ({
 
   if (showFullHistory) {
     return (
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-20 shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 h-[700px]">
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-40 shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 h-[700px]">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
         <div className="mt-8 flex items-center gap-4 mb-8">
            <button onClick={() => setShowFullHistory(false)} className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors">
@@ -43,7 +43,7 @@ const SmartphoneUPI: React.FC<Props> = ({
            </button>
            <h2 className="text-xl font-bold">Transaction History</h2>
         </div>
-        <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar pb-10">
           {userWallet.transactions.length === 0 ? (
             <div className="text-center py-20 text-slate-500">No records found</div>
           ) : (
@@ -65,7 +65,7 @@ const SmartphoneUPI: React.FC<Props> = ({
             ))
           )}
         </div>
-        <div className="mt-6 flex justify-center pb-6">
+        <div className="mt-6 flex justify-center pb-8">
           <div className="w-24 h-1 bg-slate-800 rounded-full"></div>
         </div>
       </div>
@@ -76,7 +76,7 @@ const SmartphoneUPI: React.FC<Props> = ({
   const isLoadReady = connectivity.isWifiOn && isWatchLinked;
 
   return (
-    <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-20 shadow-2xl relative overflow-hidden flex flex-col h-[700px]">
+    <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-40 shadow-2xl relative overflow-hidden flex flex-col h-[700px]">
       {/* Phone Notch & Status Bar */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
       <div className="absolute top-0 left-0 right-0 h-12 px-8 flex justify-between items-center text-[10px] font-bold text-slate-400 z-10">
@@ -100,7 +100,7 @@ const SmartphoneUPI: React.FC<Props> = ({
         </div>
       </div>
 
-      <div className="mt-10 flex flex-col gap-8 flex-1">
+      <div className="mt-10 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div className="flex justify-between items-center">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
@@ -221,8 +221,8 @@ const SmartphoneUPI: React.FC<Props> = ({
       </div>
       
       {/* Home Indicator */}
-      <div className="mt-6 flex justify-center pb-6">
-        <div className="w-24 h-1 bg-slate-800 rounded-full"></div>
+      <div className="mt-6 flex justify-center pb-8 shrink-0">
+        <div className="w-24 h-1.5 bg-slate-800 rounded-full"></div>
       </div>
 
       {/* Local App Notification */}
