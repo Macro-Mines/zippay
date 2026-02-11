@@ -36,7 +36,7 @@ const MerchantApp: React.FC<Props> = ({ wallet, onRequestPayment, onToggleActive
           <h2 className="text-xl font-bold mt-1">Merchant Hub</h2>
         </div>
         <div className="text-right">
-          <p className="text-[10px] text-slate-500 uppercase">Settlement Balance</p>
+          <p className="text-[10px] text-slate-500 uppercase">Wallet Balance</p>
           <p className="text-lg font-bold text-green-400">₹{wallet.balance.toFixed(2)}</p>
         </div>
       </div>

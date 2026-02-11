@@ -24,7 +24,7 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
 
   if (showFullHistory) {
     return (
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-12 shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 h-[700px]">
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-20 shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 h-[700px]">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
         <div className="mt-8 flex items-center gap-4 mb-8">
            <button onClick={() => setShowFullHistory(false)} className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors">
@@ -54,17 +54,19 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
             ))
           )}
         </div>
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex justify-center pb-6">
           <div className="w-24 h-1 bg-slate-800 rounded-full"></div>
         </div>
       </div>
     );
   }
 
-  const isLoadReady = connectivity.isWifiOn && connectivity.isBluetoothOn;
+  // A watch is considered "Linked" only if Bluetooth is on AND the watch is Active
+  const isWatchLinked = connectivity.isBluetoothOn && userWallet.isActive;
+  const isLoadReady = connectivity.isWifiOn && isWatchLinked;
 
   return (
-    <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-12 shadow-2xl relative overflow-hidden flex flex-col h-[700px]">
+    <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-20 shadow-2xl relative overflow-hidden flex flex-col h-[700px]">
       {/* Phone Notch & Status Bar */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
       <div className="absolute top-0 left-0 right-0 h-12 px-8 flex justify-between items-center text-[10px] font-bold text-slate-400 z-10">
@@ -93,7 +95,7 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <i className="fas fa-bolt text-indigo-500 text-[10px]"></i>
-              <p className="text-slate-400 text-[10px] uppercase tracking-widest font-bold">FLASHPay UPI</p>
+              <p className="text-slate-400 text-[10px] uppercase tracking-widest font-bold">ZiPPaY UPI</p>
             </div>
             <h2 className="text-2xl font-bold">Hello, User</h2>
           </div>
@@ -118,8 +120,8 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
             <div className="text-right">
               <p className="text-indigo-200 text-[9px] uppercase font-bold tracking-wider mb-0.5">Watch Pro 2</p>
               <div className="flex items-center justify-end gap-2">
-                <div className={`w-2 h-2 rounded-full ${connectivity.isBluetoothOn ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)] blinking-green' : 'bg-red-500'}`}></div>
-                <span className="text-[10px] font-bold">{connectivity.isBluetoothOn ? 'CONNECTED' : 'OFFLINE'}</span>
+                <div className={`w-2 h-2 rounded-full ${isWatchLinked ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)] blinking-green' : 'bg-red-500'}`}></div>
+                <span className="text-[10px] font-bold">{isWatchLinked ? 'CONNECTED' : 'OFFLINE'}</span>
               </div>
             </div>
           </div>
@@ -141,9 +143,9 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
             </div>
             {!isLoadReady && (
                <p className="text-[8px] text-red-400 font-bold uppercase tracking-tight text-center">
-                 { !connectivity.isWifiOn && !connectivity.isBluetoothOn ? 'Turn on Wi-Fi & Bluetooth to Load' : 
-                   !connectivity.isWifiOn ? 'Wi-Fi required for bank connection' : 
-                   'Connect Watch via Bluetooth to transfer' }
+                 { !connectivity.isWifiOn ? 'Wi-Fi required for bank connection' : 
+                   !userWallet.isActive ? 'Activate Watch to Load' :
+                   !connectivity.isBluetoothOn ? 'Connect Watch via Bluetooth' : '' }
                </p>
             )}
           </div>
@@ -161,9 +163,9 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
             </button>
             <button 
               onClick={onSync}
-              className={`h-14 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 border ${connectivity.isBluetoothOn ? 'bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500' : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'}`}
+              className={`h-14 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 border ${isWatchLinked ? 'bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500' : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'}`}
             >
-              <i className={`fas fa-sync-alt ${connectivity.isBluetoothOn ? 'animate-spin-slow' : ''}`}></i>
+              <i className={`fas fa-sync-alt ${isWatchLinked ? 'animate-spin-slow' : ''}`}></i>
               Sync
             </button>
           </div>
@@ -209,7 +211,7 @@ const SmartphoneUPI: React.FC<Props> = ({ userWallet, connectivity, onLoadMoney,
       </div>
       
       {/* Home Indicator */}
-      <div className="mt-6 flex justify-center pb-2">
+      <div className="mt-6 flex justify-center pb-6">
         <div className="w-24 h-1 bg-slate-800 rounded-full"></div>
       </div>
 

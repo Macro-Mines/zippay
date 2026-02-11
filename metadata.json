@@ -1,5 +1,5 @@
 {
-  "name": "FLASHPay Prototype",
+  "name": "ZiPPaY Prototype",
   "description": "A comprehensive smartwatch-based micro-payment system featuring a Wear OS watch interface, a consumer UPI app, and a merchant terminal for offline-capable transactions up to ₹500.",
   "requestFramePermissions": []
 }

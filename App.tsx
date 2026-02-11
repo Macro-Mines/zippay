@@ -158,7 +158,7 @@ const App: React.FC = () => {
     const merchantTx: Transaction = {
       ...tx,
       type: 'CREDIT',
-      peer: 'FLASHPay User'
+      peer: 'ZiPPaY User'
     };
 
     setState(prev => ({
@@ -218,7 +218,7 @@ const App: React.FC = () => {
           <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
             <i className="fas fa-bolt text-white text-xl"></i>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">FLASH<span className="text-indigo-400">Pay</span></h1>
+          <h1 className="text-2xl font-bold tracking-tight">ZiP<span className="text-indigo-400">PaY</span></h1>
         </div>
         
         <nav className="flex gap-2 bg-slate-900 p-1 rounded-xl">

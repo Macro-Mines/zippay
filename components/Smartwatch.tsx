@@ -84,7 +84,7 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
           ) : showHistory ? (
             <div className="flex flex-col items-center w-full h-full mt-12 px-2 animate-in slide-in-from-bottom duration-300">
                <div className="flex justify-between items-center w-full mb-2">
-                 <p className="text-[9px] font-bold text-slate-500 uppercase">Local History</p>
+                 <p className="text-[9px] font-bold text-slate-500 uppercase">History</p>
                  <button onClick={() => setShowHistory(false)} className="text-[10px] text-indigo-400 font-bold uppercase">Back</button>
                </div>
                <div className="w-full flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 pb-10">
@@ -106,12 +106,19 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
           ) : (
             <>
               <div 
-                className="mt-4 cursor-pointer active:scale-95 transition-transform" 
+                className="mt-6 cursor-pointer active:scale-95 transition-transform flex flex-col items-center" 
                 onClick={() => setShowHistory(true)}
                 title="Tap for history"
               >
-                <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] mb-1">Flash Wallet</p>
-                <h3 className="text-3xl font-bold mb-1">₹{userWallet.balance.toFixed(0)}</h3>
+                {/* Brand Header */}
+                <div className="flex flex-col items-center gap-1 mb-2">
+                  <div className="w-5 h-5 bg-indigo-600 rounded flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                    <i className="fas fa-bolt text-white text-[10px]"></i>
+                  </div>
+                  <p className="text-[8px] text-indigo-400 font-black uppercase tracking-[0.25em]">ZiP WALLET</p>
+                </div>
+
+                <h3 className="text-4xl font-bold mb-0.5 tracking-tight">₹{userWallet.balance.toFixed(0)}</h3>
                 <p className={`text-[10px] font-bold mb-4 ${userWallet.isActive ? 'text-indigo-400' : 'text-red-500'}`}>
                   {userWallet.isActive ? 'READY' : 'INACTIVE'}
                 </p>
@@ -125,7 +132,8 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
                 <div className="w-2 h-2 rounded-full bg-white"></div>
               </button>
 
-              <div className="absolute bottom-10 flex gap-1">
+              {/* Offline Transaction Counter - Shifted to the very bottom */}
+              <div className="absolute bottom-6 flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <div 
                     key={i} 
@@ -133,7 +141,6 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
                   ></div>
                 ))}
               </div>
-              <p className="absolute bottom-6 text-[7px] font-bold text-slate-600 uppercase tracking-tighter">Tap balance for history</p>
             </>
           )}
 
