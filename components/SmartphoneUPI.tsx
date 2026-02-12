@@ -39,13 +39,11 @@ const SmartphoneUPI: React.FC<Props> = ({
   const isWatchLinked = connectivity.isBluetoothOn && userWallet.isActive;
   const isLoadReady = connectivity.isWifiOn && isWatchLinked;
 
-  // Outer frame styles to ensure consistency between views
   const frameClasses = "w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 mb-40 shadow-2xl relative overflow-hidden flex flex-col h-[700px]";
 
   if (showFullHistory) {
     return (
       <div className={`${frameClasses} animate-in slide-in-from-right duration-300`}>
-        {/* Phone Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
         
         <div className="mt-8 flex items-center gap-4 mb-8">
@@ -78,7 +76,6 @@ const SmartphoneUPI: React.FC<Props> = ({
           )}
         </div>
 
-        {/* Device Home Bar */}
         <div className="mt-2 flex justify-center pb-2">
           <div className="w-24 h-1 bg-slate-800 rounded-full"></div>
         </div>
@@ -88,7 +85,6 @@ const SmartphoneUPI: React.FC<Props> = ({
 
   return (
     <div className={frameClasses}>
-      {/* Phone Notch & Status Bar */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-b-2xl z-20"></div>
       <div className="absolute top-0 left-0 right-0 h-12 px-8 flex justify-between items-center text-[10px] font-bold text-slate-400 z-10">
         <span className="mt-2">{time}</span>
@@ -116,14 +112,13 @@ const SmartphoneUPI: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* ZiP Wallet Card */}
       <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2rem] p-6 mb-4 shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
         <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mb-1">ZiP BALANCE</p>
-              <h3 className="text-4xl font-black text-white">₹{userWallet.balance.toFixed(2)}</h3>
+              <h3 className={`text-4xl font-black ${userWallet.balance < 0 ? 'text-red-400' : 'text-white'}`}>₹{userWallet.balance.toFixed(2)}</h3>
             </div>
             <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-md">
               <i className="fas fa-bolt text-white text-xs animate-pulse"></i>
@@ -146,7 +141,6 @@ const SmartphoneUPI: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Auto-Reload Toggle Section */}
       <div className="bg-slate-800/40 rounded-2xl p-4 mb-6 border border-slate-800/50 flex items-center justify-between transition-all">
         <div>
           <h4 className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-0.5">Auto-Reload</h4>
@@ -160,7 +154,6 @@ const SmartphoneUPI: React.FC<Props> = ({
         </button>
       </div>
 
-      {/* TOP-UP WALLET Section */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-3 px-1">
           <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TOP-UP WALLET</h4>
@@ -205,7 +198,6 @@ const SmartphoneUPI: React.FC<Props> = ({
         )}
       </div>
 
-      {/* Recent History */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex justify-between items-center mb-4 px-1">
           <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recent Activity</h4>
@@ -228,7 +220,7 @@ const SmartphoneUPI: React.FC<Props> = ({
                   <p className="text-[8px] text-slate-500">{new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
               </div>
-              <p className={`text-xs font-black ${tx.type === 'CREDIT' ? 'text-green-400' : 'text-slate-200'}`}>
+              <p className={`text-xs font-black ${tx.type === 'CREDIT' ? 'text-green-400' : (tx.peer.includes('Emergency') ? 'text-red-400' : 'text-slate-200')}`}>
                 {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount}
               </p>
             </div>
@@ -241,7 +233,6 @@ const SmartphoneUPI: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Notification Layer */}
       {phoneAlert && (
         <NotificationOverlay 
           message={phoneAlert.message} 
@@ -251,7 +242,6 @@ const SmartphoneUPI: React.FC<Props> = ({
         />
       )}
 
-      {/* Device Home Bar */}
       <div className="mt-2 flex justify-center pb-2">
         <div className="w-24 h-1 bg-slate-800 rounded-full"></div>
       </div>

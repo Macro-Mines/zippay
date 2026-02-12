@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GlobalState, NotificationType } from '../types';
 
@@ -15,7 +16,6 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
   const [showHistory, setShowHistory] = useState(false);
   const [shakeClass, setShakeClass] = useState('');
   
-  // Track previous states to trigger shake
   const prevActiveRef = useRef(userWallet.isActive);
   const prevAlertRef = useRef(watchAlert);
 
@@ -26,7 +26,6 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
     return () => clearInterval(timer);
   }, []);
 
-  // Trigger shake animation when status changes or alerts arrive
   useEffect(() => {
     let timeout: number;
     
@@ -36,11 +35,9 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
       timeout = window.setTimeout(() => setShakeClass(''), 300);
     };
 
-    // Shake on alert change (success or error)
     if (watchAlert && watchAlert !== prevAlertRef.current) {
       triggerShake(watchAlert.type === 'error' ? 'heavy' : 'light');
     } 
-    // Shake on activation toggle
     else if (userWallet.isActive !== prevActiveRef.current) {
       triggerShake('light');
     }
@@ -51,24 +48,22 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
     return () => clearTimeout(timeout);
   }, [watchAlert, userWallet.isActive]);
 
-  // Bluetooth icon blinks blue when connected to mobile, and green when dealing with a merchant request
   const bluetoothColorClass = pendingRequest 
     ? 'text-green-400 blinking-green !shadow-none' 
     : (isMobileConnected ? 'text-blue-400 animate-pulse' : 'text-slate-700');
 
+  const isEmergency = pendingRequest && userWallet.balance < pendingRequest.amount;
+  const emergencyFee = pendingRequest ? (pendingRequest.amount * 0.04) : 0;
+
   return (
     <div className="relative flex flex-col items-center">
-      {/* Watch Strap Top */}
       <div className="w-24 h-48 bg-slate-800 rounded-t-3xl border-x border-t border-slate-700 mb-[-60px] shadow-lg"></div>
 
-      {/* Watch Case */}
       <div className={`relative z-10 w-72 h-72 rounded-full border-4 border-slate-700 bg-slate-900 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex items-center justify-center p-2 transition-transform duration-75 ${shakeClass}`}>
-        {/* Watch Face Screen */}
         <div 
           className="watch-face relative w-full h-full overflow-hidden flex flex-col items-center justify-center p-6 text-center select-none"
         >
           
-          {/* Top Status Area - Enhanced with Battery Level */}
           <div className="absolute top-5 flex flex-col items-center z-20">
             <div className="flex items-center gap-2 mb-0.5">
               <div className={`transition-colors duration-500 ${bluetoothColorClass}`}>
@@ -97,11 +92,23 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
               </div>
             </div>
           ) : pendingRequest ? (
-            <div className="animate-in zoom-in duration-300 flex flex-col items-center gap-2 w-full mt-14">
-              <p className="text-[9px] text-slate-400 uppercase tracking-tighter">Request From</p>
-              <h4 className="text-xs font-semibold truncate max-w-full mb-1">{pendingRequest.from}</h4>
-              <div className="text-4xl font-black text-indigo-400 mb-2">₹{pendingRequest.amount}</div>
-              <div className="flex gap-4 mt-2">
+            <div className="animate-in zoom-in duration-300 flex flex-col items-center gap-2 w-full mt-10">
+              <div className="flex flex-col items-center gap-0.5">
+                 {isEmergency && (
+                   <span className="text-[8px] bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full font-black tracking-widest mb-1 animate-pulse">EMERGENCY ZiP</span>
+                 )}
+                 <p className="text-[9px] text-slate-400 uppercase tracking-tighter">Request From</p>
+                 <h4 className="text-xs font-semibold truncate max-w-full mb-1">{pendingRequest.from}</h4>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div className="text-4xl font-black text-indigo-400">₹{pendingRequest.amount}</div>
+                {isEmergency && (
+                  <p className="text-[8px] font-bold text-slate-500 mt-0.5">+₹{emergencyFee.toFixed(2)} Fee</p>
+                )}
+              </div>
+
+              <div className="flex gap-4 mt-1">
                 <button 
                   onClick={() => onProcessPayment(false)}
                   className="w-10 h-10 rounded-full bg-slate-800 hover:bg-red-500/20 text-red-500 border border-red-500/30 flex items-center justify-center transition-all"
@@ -145,7 +152,6 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
                 onClick={() => setShowHistory(true)}
                 title="Tap for history"
               >
-                {/* Brand Header */}
                 <div className="flex flex-col items-center gap-1 mb-2">
                   <div className="w-5 h-5 bg-indigo-600 rounded flex items-center justify-center shadow-lg shadow-indigo-600/20">
                     <i className="fas fa-bolt text-white text-[10px]"></i>
@@ -153,24 +159,22 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
                   <p className="text-[8px] text-indigo-400 font-black uppercase tracking-[0.25em]">ZiP WALLET</p>
                 </div>
 
-                <h3 className="text-4xl font-bold mb-0.5 tracking-tight">₹{userWallet.balance.toFixed(0)}</h3>
+                <h3 className={`text-4xl font-bold mb-0.5 tracking-tight ${userWallet.balance < 0 ? 'text-red-400' : ''}`}>₹{userWallet.balance.toFixed(0)}</h3>
                 <p 
                   key={userWallet.isActive ? 'ready' : 'inactive'}
-                  className={`text-[10px] font-bold mb-4 status-fade-animation ${userWallet.isActive ? 'text-indigo-400' : 'text-red-500'}`}
+                  className={`text-[10px] font-bold mb-4 status-fade-animation ${userWallet.isActive ? (userWallet.balance < 0 ? 'text-red-500' : 'text-indigo-400') : 'text-red-500'}`}
                 >
-                  {userWallet.isActive ? 'READY' : 'INACTIVE'}
+                  {userWallet.balance < 0 ? 'DEBT' : (userWallet.isActive ? 'READY' : 'INACTIVE')}
                 </p>
               </div>
               
-              {/* Central Blinking Dot Button */}
               <button 
                 onClick={onToggleActive}
-                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90 ${userWallet.isActive ? 'blinking-green bg-green-500' : 'blinking-red bg-red-500'}`}
+                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90 ${userWallet.isActive ? (userWallet.balance < 0 ? 'blinking-red bg-red-500' : 'blinking-green bg-green-500') : 'blinking-red bg-red-500'}`}
               >
                 <div className="w-2 h-2 rounded-full bg-white"></div>
               </button>
 
-              {/* Offline Transaction Counter - Shifted to the very bottom */}
               <div className="absolute bottom-6 flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <div 
@@ -182,15 +186,12 @@ const Smartwatch: React.FC<Props> = ({ userWallet, pendingRequest, isMobileConne
             </>
           )}
 
-          {/* Decorative Ring */}
           <div className="absolute inset-0 border border-slate-800/50 rounded-full pointer-events-none m-4"></div>
         </div>
 
-        {/* Physical Crown */}
         <div className="absolute right-[-14px] top-1/2 -translate-y-1/2 w-4 h-10 bg-slate-700 rounded-r-lg border-y border-r border-slate-600"></div>
       </div>
 
-      {/* Watch Strap Bottom */}
       <div className="w-24 h-48 bg-slate-800 rounded-b-3xl border-x border-b border-slate-700 mt-[-60px] shadow-lg"></div>
 
       <style>{`

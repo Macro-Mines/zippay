@@ -40,7 +40,6 @@ const App: React.FC = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure new properties exist in saved state
       if (parsed.userWallet && parsed.userWallet.isAutoReloadEnabled === undefined) {
         parsed.userWallet.isAutoReloadEnabled = false;
       }
@@ -49,7 +48,6 @@ const App: React.FC = () => {
     return initialState;
   });
 
-  // Ref to prevent multiple triggers during the same state transition
   const autoReloadTriggered = useRef(false);
 
   useEffect(() => {
@@ -89,7 +87,6 @@ const App: React.FC = () => {
     triggerPhoneAlert(enabled ? "Auto-Reload enabled (₹50 → ₹200)" : "Auto-Reload disabled", 'info');
   };
 
-  // Auto-Reload Effect
   useEffect(() => {
     const { userWallet, connectivity } = state;
     const isWatchLinked = connectivity.isBluetoothOn && userWallet.isActive;
@@ -97,10 +94,12 @@ const App: React.FC = () => {
 
     if (userWallet.isAutoReloadEnabled && isLoadReady && userWallet.balance < 50 && !autoReloadTriggered.current) {
       autoReloadTriggered.current = true;
+      
+      // Auto-reload only if balance is at least negative-clearing or zero
+      // If balance is -104, reloadAmount is 200 - (-104) = 304
       const reloadAmount = 200 - userWallet.balance;
       
       if (userWallet.phoneBalance >= reloadAmount) {
-        // Delay slightly for UX feel if just connected
         setTimeout(() => {
           const txId = `TXN-AUTO-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
           const tx: Transaction = {
@@ -247,8 +246,18 @@ const App: React.FC = () => {
       return triggerWatchAlert("WATCH INACTIVE", 'error');
     }
     
+    let isEmergency = false;
+    let finalDebitAmount = request.amount;
+
     if (state.userWallet.balance < request.amount) {
-      return triggerWatchAlert("LOW BALANCE", 'error');
+      // Check if eligible for Emergency ZiP (balance must be >= 0)
+      if (state.userWallet.balance >= 0) {
+        isEmergency = true;
+        const fee = request.amount * 0.04;
+        finalDebitAmount = request.amount + fee;
+      } else {
+        return triggerWatchAlert("DEBT PENDING", 'error');
+      }
     }
     
     if (state.userWallet.offlineCount >= 5) {
@@ -258,14 +267,15 @@ const App: React.FC = () => {
     const txId = `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     const tx: Transaction = {
       id: txId,
-      amount: request.amount,
+      amount: finalDebitAmount,
       timestamp: Date.now(),
       type: 'DEBIT',
-      peer: request.from,
+      peer: isEmergency ? `${request.from} (Emergency)` : request.from,
     };
 
     const merchantTx: Transaction = {
       ...tx,
+      amount: request.amount, // Merchant only gets requested amount
       type: 'CREDIT',
       peer: 'ZiPPaY User'
     };
@@ -274,7 +284,7 @@ const App: React.FC = () => {
       ...prev,
       userWallet: {
         ...prev.userWallet,
-        balance: prev.userWallet.balance - request.amount,
+        balance: prev.userWallet.balance - finalDebitAmount,
         pendingSync: [tx, ...prev.userWallet.pendingSync],
         offlineCount: prev.userWallet.offlineCount + 1,
       },
@@ -286,7 +296,7 @@ const App: React.FC = () => {
       pendingPaymentRequest: null
     }));
     
-    triggerWatchAlert("PAID SUCCESS", 'success');
+    triggerWatchAlert(isEmergency ? "EMERGENCY PAID" : "PAID SUCCESS", 'success');
   };
 
   const syncWatch = () => {
